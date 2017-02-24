@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>自定义网页右键菜单</title>
+	<style>
+		.area, .area2 {
+			background-color: #ddd;
+			color: #fff;
+			text-align: center;
+			font-size: 40px;
+		}
+		.area {
+			height: 400px;
+			line-height: 400px;
+		}
+		.area2 {
+			height: 300px;
+			line-height: 300px;
+			margin-top: 200px;
+		}
+		.context-menu {
+			display: none;
+			position: absolute;
+			width: 200px;
+			box-shadow: 0 0 5px #666;
+			background-color: #fff;
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+		.context-menu-item {
+			padding: 10px;
+			cursor: default;
+		}
+		.context-menu-item:hover {
+			background-color: #eee;
+		}
+	</style>
+</head>
+<body>
+	<div class="area">右键点我哇</div>
+	<div class="area2">右键又点我哇</div>
+	<ul class="context-menu">
+		<li class="context-menu-item">Menu Item 1</div>
+		<li class="context-menu-item">Menu Item 2</div>
+	</ul>
+	<script>
+
+	setContextMenu('area');
+	setContextMenu('area2')
+
+	function setContextMenu(className) {
+		var menu = getByClass('context-menu')[0];
+		getByClass(className)[0].addEventListener('contextmenu', function(e) {
+			e.preventDefault();
+			var e = e || window.event,
+					mouseX = e.clientX,
+					mouseY = e.clientY,
+					width = window.innerWidth,
+					height = window.innerHeight;
+
+			menu.style.display = 'block';
+			if (mouseX + getStyle(menu, 'width') < width) {
+				menu.style.left = mouseX + window.scrollX + 'px';
+			} else {
+				menu.style.left = mouseX + window.scrollX - getStyle(menu, 'width') + 'px';
+			}
+			if (mouseY + getStyle(menu, 'height') < height) {
+				menu.style.top = mouseY + window.scrollY + 'px';
+			} else {
+				menu.style.top = mouseY + window.scrollY - getStyle(menu, 'height') + 'px';
+			}
+			return false;
+		});
+	}
+
+	[].forEach.call(getByClass('context-menu-item'), function(item, index) {
+		item.addEventListener('click', function(e) {
+			var e = e || window.event;
+			e.stopPropagation ? e.stopPropagation() : e.cancelBuble = true;
+			alert(item.innerHTML);
+		})
+	})
+
+	document.addEventListener('click', function(e) {
+		getByClass('context-menu')[0].style.display = 'none';
+	})
+	
+	function getByClass(className, element) {
+		if (document.getElementsByClassName) {
+			return document.getElementsByClassName(className, element);
+		} else {
+			var parent = element || document,
+					result = [],
+					nodes = parent.getElementsByTagName('*');
+			for (var i = 0, l = nodes.length; i < l; i++) {
+				var classNameArr = nodes[i].className.split(' ');
+				for (var j = 0, len = classNameArr.length; j < len; j++) {
+					if (classNameArr[j] === className) {
+						result.push(nodes[i])
+					}
+				}
+			}
+			return result;
+		}
+	}
+
+	function getStyle(element, attr) {
+		if (getComputedStyle) {
+			return parseInt(getComputedStyle(element, null)[attr]);
+		} else {
+			return parseInt(element.currentStyle[attr]);
+		}
+	}
+	</script>
+</body>
+</html>
