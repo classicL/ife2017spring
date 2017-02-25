@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>有趣的鼠标悬浮模糊效果</title>
+	<style>
+		.container {
+			position: relative;
+		}
+		.container, .container img {
+			display: inline-block;
+			width: 400px;
+			height: auto;
+		}
+		.container:hover img {
+			-webkit-filter:blur(3px);
+			filter: blur(3px);
+		}
+		.words {
+			position: absolute;
+			width: 80%;
+			height: 80%;
+			top: 0;
+			right: 0;
+			left: 0;
+			bottom: 0;
+			margin: auto;
+			text-align: center;
+		}
+		.title {
+			margin-top: 20%;
+		}
+		.container:hover .words:before, .container:hover .words:after {
+			height: 100%;
+			top: 0;
+		}
+		.container:hover .title:before, .container:hover .title:after {
+			width: 100%;
+			left: 0;
+		}
+		.words:before, .words:after, .title:before, .title:after {
+			content: ' ';
+			position: absolute;
+			transition-property: width,height,left,top;
+    	transition-duration: 0.3s;
+		}
+		.words:before, .words:after {
+			height: 0;
+			top: 50%;
+			border-left: 4px solid #fff;
+		}
+		.title:before, .title:after {
+			width: 0;
+			left: 50%;
+			border-top: 4px solid #fff;
+		}
+		.words:before {
+			left: 0;
+		}
+		.words:after {
+			right: 0;
+		}
+		.title:before {
+			top: 0;
+		}
+		.title:after {
+			bottom: 0;
+		}
+		.title, .click {
+			color: transparent;
+			background-size: 200% 100%;
+			padding-top: 10px;
+			transition-property: padding-top, color;
+			transition-duration: .3s;
+			font-weight: 700;
+		}
+		.container:hover .title, .container:hover .click {
+			visibility: visible;
+			color: #000;
+			background-image: -webkit-linear-gradient(right,green,red,red,green);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			padding-top: 0;
+			animation: words-color 3s linear infinite;
+		}
+
+		@keyframes words-color {
+			from {
+				background-position: 200% 0;
+			}
+			to {
+				background-position: 0 0;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="main">
+		<a href="#" class="container">
+			<img src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1488029728283&di=11a4ff7f1735cc7e6e26b591a2c8f97d&imgtype=0&src=http%3A%2F%2Fimg3.100bt.com%2Fupload%2Fttq%2F20131123%2F1385196928874_middle.jpg">
+			<div class="words">
+				<h2 class="title">欢迎参加前端技术学院</h2>
+				<span class="click">点击报名</span>
+			</div>
+		</a>
+	</div>
+</body>
+</html>
