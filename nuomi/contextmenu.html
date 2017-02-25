@@ -4,6 +4,10 @@
 	<meta charset="UTF-8">
 	<title>自定义网页右键菜单</title>
 	<style>
+		html, body {
+			height: 100%;
+			margin: 0;
+		}
 		.area, .area2 {
 			background-color: #ddd;
 			color: #fff;
@@ -13,11 +17,12 @@
 		.area {
 			height: 400px;
 			line-height: 400px;
+			width: 3000px;
 		}
 		.area2 {
 			height: 300px;
 			line-height: 300px;
-			margin-top: 200px;
+			margin-top: 250px;
 		}
 		.context-menu {
 			display: none;
@@ -42,23 +47,48 @@
 	<div class="area">右键点我哇</div>
 	<div class="area2">右键又点我哇</div>
 	<ul class="context-menu">
-		<li class="context-menu-item">Menu Item 1</div>
-		<li class="context-menu-item">Menu Item 2</div>
+		<li class="context-menu-item">Menu Item 1</li>
+		<li class="context-menu-item">Menu Item 2</li>
 	</ul>
 	<script>
 
-	setContextMenu('area');
-	setContextMenu('area2')
+	var init = (function () {
+		var start = false;
+		return function() {
+			if (start) {
+				return
+			}
+			start = true;
+			document.addEventListener('contextmenu', function(e) {
+				var e = e || window.event;
+				e.preventDefault();
+				return false;
+			});
+			[].forEach.call(getByClass('context-menu-item'), function(item, index) {
+				item.addEventListener('click', function(e) {
+					var e = e || window.event;
+					e.stopPropagation ? e.stopPropagation() : e.cancelBuble = true;
+					alert(item.innerHTML);
+				})
+			})
+
+			document.addEventListener('click', function(e) {
+				getByClass('context-menu')[0].style.display = 'none';
+			})
+		}
+		
+	})();
 
 	function setContextMenu(className) {
+		init();
 		var menu = getByClass('context-menu')[0];
 		getByClass(className)[0].addEventListener('contextmenu', function(e) {
 			e.preventDefault();
 			var e = e || window.event,
 					mouseX = e.clientX,
 					mouseY = e.clientY,
-					width = window.innerWidth,
-					height = window.innerHeight;
+					width = document.body.clientWidth || document.documentElement.clientWidth,
+					height = document.body.clientHeight || document.documentElement.clientHeight;
 
 			menu.style.display = 'block';
 			if (mouseX + getStyle(menu, 'width') < width) {
@@ -73,19 +103,7 @@
 			}
 			return false;
 		});
-	}
-
-	[].forEach.call(getByClass('context-menu-item'), function(item, index) {
-		item.addEventListener('click', function(e) {
-			var e = e || window.event;
-			e.stopPropagation ? e.stopPropagation() : e.cancelBuble = true;
-			alert(item.innerHTML);
-		})
-	})
-
-	document.addEventListener('click', function(e) {
-		getByClass('context-menu')[0].style.display = 'none';
-	})
+	}	
 	
 	function getByClass(className, element) {
 		if (document.getElementsByClassName) {
@@ -113,6 +131,10 @@
 			return parseInt(element.currentStyle[attr]);
 		}
 	}
+
+	
+	setContextMenu('area');
+	setContextMenu('area2');
 	</script>
 </body>
 </html>
