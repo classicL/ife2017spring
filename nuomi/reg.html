@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<div>
+		<label for="phone-input">电话：</label>
+		<input type="text" id="phone-input">
+		<span id="phone-signal"></span>
+	</div>
+	<div>
+		<label for="words-input">字符串：</label>
+		<input type="text" id="words-input">
+		<span id="words-signal"></span>
+	</div>
+	<script>
+	var phone = /^1((3|8)\d|5[0-35-9]|7[0135-8]|4[579])\d{8}$/;
+	var words = /(\b(\w+)\b)\s+\1\b/;
+
+	document.getElementById('phone-input').addEventListener('keyup', testPhone);
+	document.getElementById('words-input').addEventListener('keyup', testWords);
+
+	function testPhone() {
+		if (phone.test(this.value)) {
+			document.getElementById('phone-signal').innerHTML = '通过测试';
+		} else {
+			document.getElementById('phone-signal').innerHTML = '未通过测试';
+		}
+	}
+	function testWords() {
+		if (words.test(this.value)) {
+			document.getElementById('words-signal').innerHTML = '通过测试';
+		} else {
+			document.getElementById('words-signal').innerHTML = '未通过测试';
+		}
+	}
+	</script>
+</body>
+</html>
