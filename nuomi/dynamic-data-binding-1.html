@@ -6,26 +6,26 @@
 </head>
 <body>
 	<script>
-		function Observer(opt) {
-			if (opt instanceof Array) {
-				return
-			}
-			if (opt instanceof Object) {
-				this.data = {};
-				for (let attr in opt) {
+		function Observer(data) {
+			if (data instanceof Object) {
+				this.data = data;
+				for (let attr in data) {
+					let val = data[attr];
 					Object.defineProperties(this.data, {
 						[attr]: {
 							get () {
 								console.log('你访问了 ' + attr);
-								return opt[attr]
+								return val;
 							},
 							set(val) {
 								console.log('你设置了 ' + attr + ', 新的值是 ' + val);
-								opt[attr] = val;
+								val = val;
 							}
 						}
 					})
 				}
+			} else {
+				console.error('参数必须为对象')
 			}
 		}
 
