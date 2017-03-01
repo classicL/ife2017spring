@@ -17,9 +17,9 @@
 								console.log('你访问了 ' + attr);
 								return val;
 							},
-							set(val) {
-								console.log('你设置了 ' + attr + ', 新的值是 ' + val);
-								val = val;
+							set(newVal) {
+								console.log('你设置了 ' + attr + ', 新的值是 ' + newVal);
+								val = newVal;
 							}
 						}
 					})
