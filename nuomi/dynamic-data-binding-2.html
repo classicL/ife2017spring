@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>动态数据绑定2</title>
+</head>
+<body>
+	<script>
+		function Observer(data) {
+			if (data instanceof Object) {
+				this.data = data;
+				this._watchers = [];
+				this.walk(data);
+			} else {
+				console.error('参数必须是一个对象')
+			}
+		}
+
+		Observer.prototype.$watch = function(attr, fn) {
+			this._watchers.push({attr, fn})
+		}
+
+		Observer.prototype._knock = function(attr) {
+			let _this = this;
+			this._watchers.forEach(function(watcher) {
+				if (watcher.attr = attr) {
+					watcher.fn(_this.data[attr]);
+				}
+			})
+		}
+
+		Observer.prototype.walk = function(data) {
+			let _this = this;
+			for (let attr in data) {
+				let val;
+				if (!data.hasOwnProperty(attr)) {
+					continue;
+				}
+				val = data[attr];
+				if (typeof val === 'object') {
+					new Observer(val);
+				} 
+				Object.defineProperties(this.data, {
+					[attr]: {
+						get () {
+							console.log('你访问了 ' + attr);
+							return val;
+						},
+						set(newVal) {
+							if (typeof newVal === 'object') {
+								console.log('你设置了 ' + attr + ', 新的值是一个对象');
+								new Observer(newVal);
+								val = newVal;
+							} else {
+								console.log('你设置了 ' + attr + ', 新的值是 ' + newVal);
+								if (val === newVal) return;
+								val = newVal;
+								_this._knock(attr);
+							}
+						}
+					}
+				})
+			}
+		}
+		let app1 = new Observer({
+			name: 'youngwind',
+			age: 25
+		});
+
+		app1.data.name = {
+			lastName: 'liang',
+			firstName: 'shaofeng'
+		};
+
+		let app3 = new Observer({
+			a: 1,
+			b: 2,
+			c: {
+				d: 30,
+				e: 99
+			}
+		});
+
+		app1.data.name.lastName;
+		app1.data.name.firstName = 'lalala';
+		app3.data.a; // 你访问了 name
+		app3.data.b = 100;  // 你设置了 age，新的值为100
+
+		let app4 = new Observer({
+			name: 'youngwind',
+			age: 25
+		});
+
+		app4.$watch('age', function(age) {
+			console.log(`我的年纪变了，现在已经是：${age}岁了`)
+		})
+
+		app4.data.age = 28;
+
+	</script>
+</body>
+</html>
