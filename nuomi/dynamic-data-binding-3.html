@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>动态数据绑定3</title>
+</head>
+<body>
+	<script>
+		function Observer(data, parent = '', emitter) {
+			if (data instanceof Object) {
+				this.data = data;
+				this.emitter = emitter || new Emitter();
+				this.walk(data, parent);
+			} else {
+				console.error('参数必须是一个对象')
+			}
+		}
+
+		Observer.prototype.walk = function(data, parent) {
+			for (let attr in data) {
+				let val;
+				if (!data.hasOwnProperty(attr)) {
+					continue;
+				}
+				val = data[attr];
+				if (typeof val === 'object') {
+					new Observer(val, parent ? parent + '.' + attr : attr, this.emitter);
+				}
+				this.convert(val, attr, parent);
+			}
+		}
+
+		Observer.prototype.convert = function(val, attr, path = '') {
+			let _this = this, o;
+			path = path ? path + '.' + attr : attr;
+			Object.defineProperties(this.data, {
+				[attr]: {
+					get () {
+						return val;
+					},
+					set(newVal) {
+						if (typeof newVal === 'object') {
+							new Observer(newVal, path, _this.emitter);
+							val = newVal;
+						} else {
+							// console.log('你设置了 ' + attr + ' , 新值是 ' + newVal);
+							if (val === newVal) return;
+							val = newVal;
+							_this._knock(path, val);
+						}
+					}
+				}
+			})
+		}
+
+		Observer.prototype.$watch = function(path, fn) {
+			this.emitter.watch({path, fn})
+		}
+
+		Observer.prototype._knock = function(path, val) {
+			let _this = this;
+			this.emitter.knock({path, val});
+		}
+
+		function Emitter() {
+			this.watchers = []
+		}
+
+		Emitter.prototype.watch = function({path, fn}) {
+			this.watchers.push({path, fn});
+		}
+
+		Emitter.prototype.knock = function({path, val}) {
+			let originPath = path,
+				pathArr = [];
+			while (path.lastIndexOf('.') !== -1) {
+				path = path.slice(0,path.lastIndexOf('.'));
+				pathArr.push(path);
+			}
+			pathArr.unshift(originPath);
+			this.watchers.forEach(function(watcher) {
+				if (pathArr.indexOf(watcher.path) !== -1) {
+					watcher.fn(val)
+				}
+			})
+		}
+
+
+		let app1 = new Observer({
+			name: 'youngwind',
+			age: 25
+		});
+
+		app1.data.name = {
+			firstName: 'shaofeng',
+			lastName: {
+					a: 1,
+					b: 2
+				}
+		}
+
+		app1.$watch('name', function(age) {
+			console.log(`我的name变了`)
+		})
+
+		app1.$watch('name.lastName', function(age) {
+			console.log(`我的lastName变了`)
+		})
+
+		app1.$watch('age', function(age) {
+			console.log(`我的age变了`)
+		})
+
+		app1.data.name.firstName = 'biubiubiu';
+
+		app1.data.name.lastName.a = 28;
+
+		app1.data.age = 2;
+
+		let app2 = new Observer({
+			name: {
+				firstName: 'shaofeng',
+				lastName: {
+					a: 1,
+					b: 2
+				}
+			},
+			age: 25
+		});
+
+		app2.$watch('name', function (newName) {
+			console.log('我的姓名发生了变化，可能是姓氏变了，也可能是名字变了。')
+		});
+
+		app2.$watch('name.lastName', function (newName) {
+			console.log('我的lastName变了。')
+		});
+
+		app2.$watch('name.firstName', function (newName) {
+			console.log('我的firstName变了。')
+		});
+
+		app2.data.name.firstName = 'hahaha';
+
+		app2.data.name.lastName.a = 3;
+
+	</script>
+</body>
+</html>
