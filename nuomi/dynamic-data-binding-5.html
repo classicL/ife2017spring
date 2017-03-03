@@ -8,8 +8,8 @@
 	<div id="app">
 		<p>姓名：{{user.name}}</p>
 		<div>
-			<p>middle<span>姓名：{{user.name}}</span></p>
-			<p>年龄：{{user.age}}</p>			
+			<p>人：{{user.age}} + <span>{{user.name}} + {{user.age}}</span></p>
+			<p>年龄：{{user.age}} + {{user.age}}</p>			
 		</div>
 	</div>
 	<script>
@@ -105,7 +105,7 @@
 
 		Vue.prototype.render = function() {
 			this.directives.forEach(directive => {
-				directive.update(this.getAttr(this.data, directive.param));
+				directive.update();
 			})
 		}
 
@@ -130,27 +130,47 @@
 				nodes.forEach(function(node) {
 					if(node.innerHTML.indexOf(param) !== -1) {
 						if (lastNode && [].slice.call(lastNode.childNodes).indexOf(node) === -1) {
-							_this.directives.push(new Directive(param.slice(2,-2), lastNode, _this))
+							_this.addDirective(param.slice(2,-2), lastNode, _this);
 						}
 						lastNode = node;
 					}
 				})
-				_this.directives.push(new Directive(param.slice(2,-2), lastNode, _this))
+				_this.addDirective(param.slice(2,-2), lastNode, _this);
 			})
+		}
+
+		Vue.prototype.addDirective = function(param, node, vm) {
+			let exist = false;
+			this.directives.forEach( directive => {
+				if (directive.node === node) {
+					directive.params.push(param);
+					this.$watch(param, () => {
+						directive.update();
+					})
+					exist = true;
+				}
+			})
+			exist || this.directives.push(new Directive(param, node, vm));
 		}
 
 		function Directive(param, node, vm) {
-			this.param = param;
+			this.params = [param];
 			this.node = node;
 			this.template = this.node.innerHTML;
 			this.vm = vm;
-			vm.$watch(this.param, val => {
-				this.update(val);
+			this.params.forEach( param => {
+				vm.$watch(param, () => {
+					this.update();
+				})
 			})
 		}
 
-		Directive.prototype.update = function(val) {
-			let html = this.template.replace('{{' + this.param + '}}', val);
+		Directive.prototype.update = function() {
+			let html = this.template;
+			this.params.forEach(param => {
+				html = html.replace(new RegExp('{{' + param + '}}','g'), Vue.prototype.getAttr(this.vm.data, param));
+			})
+			// let html = this.template.replace(new RegExp('{{' + this.param + '}}','g'), val);
 			this.node.innerHTML = html;
 		}
 
