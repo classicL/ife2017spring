@@ -6,6 +6,7 @@
 </head>
 <body>
 	<div id="app">
+		<p></p>
 		<p>姓名：{{user.name}}</p>
 		<div>
 			<p>人：{{user.age}} + <span>{{user.name}} + {{user.age}}</span></p>
@@ -13,6 +14,28 @@
 		</div>
 	</div>
 	<script>
+
+		function getAllTextNodes(el) {
+			let nodes = [];
+			[].slice.call(el.childNodes).forEach( node => {
+				if (node.nodeType === 3) {
+					nodes.push(node);
+				} else if (node.childNodes.length > 0) {
+					nodes = nodes.concat(getAllTextNodes(node))
+				}
+			})
+			return nodes;
+		}
+
+		function getAttr(obj, path) {
+			let result = obj,
+				pathArr = path.split('.');
+			pathArr.forEach(function(attr) {
+				result = result[attr];
+			})
+			return result;
+		}
+
 		function Observer(data, parent = '', emitter) {
 			if (data instanceof Object) {
 				this.data = data;
@@ -65,7 +88,6 @@
 		}
 
 		Observer.prototype._knock = function(path, val) {
-			let _this = this;
 			this.emitter.knock({path, val});
 		}
 
@@ -109,33 +131,17 @@
 			})
 		}
 
-		Vue.prototype.getAttr = function(obj, path) {
-			let result = obj,
-				pathArr = path.split('.');
-			pathArr.forEach(function(attr) {
-				result = result[attr];
-			})
-			return result;
-		}
-
 		Vue.prototype.setDirective = function() {
-			let nodes = this.$el.getElementsByTagName("*"),
+			let nodes = getAllTextNodes(this.$el),
 				paramArr = this.$el.innerHTML.match(/{{\S*?}}/g);
-			let _this = this;
 			this.directives = [];
 			paramArr = Array.from(new Set(paramArr));
-			nodes = [].slice.call(nodes,0);
-			paramArr.forEach(function(param) {
-				let keyNodes = [], lastNode;
-				nodes.forEach(function(node) {
-					if(node.innerHTML.indexOf(param) !== -1) {
-						if (lastNode && [].slice.call(lastNode.childNodes).indexOf(node) === -1) {
-							_this.addDirective(param.slice(2,-2), lastNode, _this);
-						}
-						lastNode = node;
+			paramArr.forEach( param => {
+				nodes.forEach( node => {
+					if (node.data.indexOf(param) !== -1) {
+						this.addDirective(param.slice(2, -2), node, this)
 					}
 				})
-				_this.addDirective(param.slice(2,-2), lastNode, _this);
 			})
 		}
 
@@ -156,7 +162,7 @@
 		function Directive(param, node, vm) {
 			this.params = [param];
 			this.node = node;
-			this.template = this.node.innerHTML;
+			this.template = this.node.data;
 			this.vm = vm;
 			this.params.forEach( param => {
 				vm.$watch(param, () => {
@@ -168,12 +174,12 @@
 		Directive.prototype.update = function() {
 			let html = this.template;
 			this.params.forEach(param => {
-				html = html.replace(new RegExp('{{' + param + '}}','g'), Vue.prototype.getAttr(this.vm.data, param));
+				html = html.replace(new RegExp('{{' + param + '}}','g'), getAttr(this.vm.data, param));
 			})
-			// let html = this.template.replace(new RegExp('{{' + this.param + '}}','g'), val);
-			this.node.innerHTML = html;
+			this.node.data = html;
 		}
 
+		console.time('渲染时间');
 		let app = new Vue({
 			el: '#app',
 			data: {
@@ -185,6 +191,7 @@
 				major: 'computer'
 			}
 		});
+		console.timeEnd('渲染时间');
 	</script>
 </body>
 </html>
